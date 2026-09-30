@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background-color: #f7f8fa;
+  color: #1c2233;
+}
+
+/* Thin scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c5cbd8;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ba3b5;
+}
+
+/* Shimmer placeholder for loading skeletons */
+.skeleton {
+  background: linear-gradient(90deg, #eef0f4 0%, #dee2ea 50%, #eef0f4 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Tabular numbers for money/tables */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
