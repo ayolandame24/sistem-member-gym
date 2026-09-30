@@ -7,6 +7,8 @@ interface InputProps {
   required?: boolean;
   icon?: React.ReactNode;
   className?: string;
+  /** Displays a red error message below the input */
+  error?: string;
 }
 
 export function Input({
@@ -18,6 +20,7 @@ export function Input({
   required = false,
   icon,
   className = '',
+  error,
 }: InputProps) {
   return (
     <div className={className}>
@@ -39,9 +42,12 @@ export function Input({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           required={required}
-          className={`w-full h-10 ${icon ? 'pl-10' : 'pl-3.5'} pr-3.5 rounded-xl border border-ink-200 bg-white text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all`}
+          className={`w-full h-10 ${icon ? 'pl-10' : 'pl-3.5'} pr-3.5 rounded-xl border ${
+            error ? 'border-rose-400 focus:ring-rose-500/30 focus:border-rose-400' : 'border-ink-200 focus:ring-brand-500/30 focus:border-brand-400'
+          } bg-white text-sm text-ink-900 placeholder:text-ink-400 focus:outline-none focus:ring-2 transition-all`}
         />
       </div>
+      {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
     </div>
   );
 }
