@@ -2,7 +2,14 @@
  * db.ts — Lapisan akses data ke Supabase.
  * Semua operasi CRUD terpusat di sini agar mudah diuji dan diubah.
  */
-import { supabase } from './supabase';
+import { supabase, supabaseConfigured } from './supabase';
+
+/** Lempar error jika Supabase belum dikonfigurasi — hooks akan fallback ke data lokal */
+function assertConfigured() {
+  if (!supabaseConfigured) {
+    throw new Error('Supabase not configured');
+  }
+}
 import type {
   MemberRow,
   InvoiceRow,
@@ -145,6 +152,7 @@ function rowToMonthRevenue(r: MonthlyRevenueRow): MonthRevenue {
 export const db = {
   members: {
     async getAll(): Promise<Member[]> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('members')
         .select('*')
@@ -154,6 +162,7 @@ export const db = {
     },
 
     async insert(m: Member): Promise<Member> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('members')
         .insert(memberToRow(m))
@@ -164,6 +173,7 @@ export const db = {
     },
 
     async update(id: string, changes: Partial<Omit<Member, 'id'>>): Promise<Member> {
+      assertConfigured();
       const partial: Partial<MemberRow['Update']> = {};
       if (changes.name !== undefined) partial.name = changes.name;
       if (changes.email !== undefined) partial.email = changes.email;
@@ -187,6 +197,7 @@ export const db = {
     },
 
     async delete(id: string): Promise<void> {
+      assertConfigured();
       const { error } = await supabase.from('members').delete().eq('id', id);
       if (error) throw error;
     },
@@ -196,6 +207,7 @@ export const db = {
 
   invoices: {
     async getAll(): Promise<Invoice[]> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('invoices')
         .select('*')
@@ -205,6 +217,7 @@ export const db = {
     },
 
     async insert(inv: Invoice): Promise<Invoice> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('invoices')
         .insert(invoiceToRow(inv))
@@ -215,6 +228,7 @@ export const db = {
     },
 
     async update(id: string, changes: Partial<Pick<Invoice, 'status' | 'dueDate' | 'period'>>): Promise<Invoice> {
+      assertConfigured();
       const partial: Partial<InvoiceRow['Update']> = {};
       if (changes.status !== undefined) partial.status = changes.status;
       if (changes.dueDate !== undefined) partial.due_date = changes.dueDate;
@@ -231,6 +245,7 @@ export const db = {
     },
 
     async delete(id: string): Promise<void> {
+      assertConfigured();
       const { error } = await supabase.from('invoices').delete().eq('id', id);
       if (error) throw error;
     },
@@ -240,6 +255,7 @@ export const db = {
 
   payments: {
     async getAll(): Promise<Payment[]> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('payments')
         .select('*')
@@ -249,6 +265,7 @@ export const db = {
     },
 
     async insert(p: Payment): Promise<Payment> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('payments')
         .insert(paymentToRow(p))
@@ -263,6 +280,7 @@ export const db = {
 
   subscriptions: {
     async getAll(): Promise<Subscription[]> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
@@ -272,6 +290,7 @@ export const db = {
     },
 
     async insert(s: Subscription): Promise<Subscription> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('subscriptions')
         .insert(subscriptionToRow(s))
@@ -282,6 +301,7 @@ export const db = {
     },
 
     async update(id: string, changes: Partial<Pick<Subscription, 'status' | 'nextBillingDate'>>): Promise<Subscription> {
+      assertConfigured();
       const partial: Partial<SubscriptionRow['Update']> = {};
       if (changes.status !== undefined) partial.status = changes.status;
       if (changes.nextBillingDate !== undefined) partial.next_billing_date = changes.nextBillingDate;
@@ -301,6 +321,7 @@ export const db = {
 
   monthlyRevenue: {
     async getAll(): Promise<MonthRevenue[]> {
+      assertConfigured();
       const { data, error } = await supabase
         .from('monthly_revenue')
         .select('*')
