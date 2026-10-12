@@ -4,49 +4,333 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FitLedger — Sistem Member Gym</title>
-  <meta http-equiv="refresh" content="0; url=frontend/index.html" />
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #eff6ff;
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; color: #0f172a;
-    }
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.1);
-      padding: 40px 48px;
-      text-align: center;
-      max-width: 420px;
-      width: 90%;
-    }
-    .logo { font-size: 48px; margin-bottom: 16px; }
-    h1 { font-size: 24px; font-weight: 700; color: #1e40af; margin-bottom: 6px; }
-    p  { font-size: 14px; color: #64748b; margin-bottom: 28px; }
-    a {
-      display: inline-block;
-      background: #2563eb;
-      color: #fff;
-      text-decoration: none;
-      padding: 12px 32px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      transition: background .2s;
-    }
-    a:hover { background: #1d4ed8; }
-    .note { margin-top: 16px; font-size: 12px; color: #94a3b8; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="card">
-    <div class="logo">🏋️</div>
-    <h1>FitLedger</h1>
-    <p>Sistem Manajemen Member Gym<br/>Billing, Pembayaran & Akuntansi</p>
-    <a href="frontend/index.html">Buka Aplikasi →</a>
-    <div class="note">Mengalihkan otomatis dalam 1 detik…</div>
+
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🏋️</div>
+      <div>
+        <div class="logo-title">FitLedger</div>
+        <div class="logo-sub">Gym Billing & Accounting</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-item" data-page="members">
+        <span class="nav-icon">👥</span> Members
+      </button>
+      <button class="nav-item" data-page="billing">
+        <span class="nav-icon">🧾</span> Billing
+      </button>
+      <button class="nav-item" data-page="recurring">
+        <span class="nav-icon">🔁</span> Recurring Billing
+      </button>
+      <button class="nav-item" data-page="payments">
+        <span class="nav-icon">💳</span> Payments
+      </button>
+      <button class="nav-item" data-page="accounting">
+        <span class="nav-icon">📈</span> Accounting
+      </button>
+      <button class="nav-item" data-page="reports">
+        <span class="nav-icon">📋</span> Reports
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-badge">FitLedger v1.0</div>
+    </div>
+  </aside>
+
+  <!-- ── Overlay mobile ──────────────────────────────────────── -->
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- ── Main ────────────────────────────────────────────────── -->
+  <div class="main-wrap">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title">
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-date" id="pageDate"></div>
+      </div>
+      <div class="topbar-search">
+        <input type="text" id="globalSearch" placeholder="Cari member, invoice…" oninput="handleSearch(this.value)" />
+      </div>
+      <div class="topbar-right">
+        <div class="notif-wrap">
+          <button class="icon-btn" onclick="toggleNotif()" id="notifBtn">
+            🔔 <span class="notif-badge" id="notifBadge">0</span>
+          </button>
+          <div class="dropdown" id="notifDropdown">
+            <div class="dropdown-header">
+              <span>Notifikasi</span>
+              <button onclick="markAllRead()">Tandai semua dibaca</button>
+            </div>
+            <div id="notifList"></div>
+          </div>
+        </div>
+        <div class="profile-wrap">
+          <button class="profile-btn" onclick="toggleProfile()" id="profileBtn">
+            <div class="avatar-circle">AD</div>
+            <span class="profile-name">Admin</span> ▾
+          </button>
+          <div class="dropdown" id="profileDropdown">
+            <div class="dropdown-header-info">
+              <div class="fw-bold">Admin</div>
+              <div class="text-muted">admin@fitledger.id</div>
+            </div>
+            <button onclick="closeDropdowns()">👤 Profil Saya</button>
+            <button onclick="closeDropdowns()">⚙️ Pengaturan</button>
+            <hr/>
+            <button class="danger-btn" onclick="if(confirm('Keluar dari FitLedger?')) location.reload()">🚪 Keluar</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Konten halaman -->
+    <main class="page-content">
+
+      <!-- ══ DASHBOARD ═════════════════════════════════════════ -->
+      <section id="page-dashboard" class="page active">
+        <div class="page-header">
+          <div>
+            <h1>Selamat datang kembali, Admin 👋</h1>
+            <p>Ringkasan performa gym Anda hari ini</p>
+          </div>
+        </div>
+        <div class="stat-grid" id="dashStats">
+          <div class="stat-card loading">Memuat…</div>
+          <div class="stat-card loading">Memuat…</div>
+          <div class="stat-card loading">Memuat…</div>
+          <div class="stat-card loading">Memuat…</div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><b>Recent Payments</b></div>
+            <div id="recentPaymentsList" class="list-wrap"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><b>Outstanding Invoices</b></div>
+            <div id="outstandingList" class="list-wrap"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ MEMBERS ════════════════════════════════════════════ -->
+      <section id="page-members" class="page">
+        <div class="page-header">
+          <div><h1>Members</h1><p>Kelola data anggota gym</p></div>
+          <button class="btn btn-primary" onclick="openAddMember()">+ Add Member</button>
+        </div>
+        <div class="summary-chips" id="memberChips"></div>
+        <div class="card">
+          <div class="filters">
+            <input type="text" id="memberSearch" placeholder="Cari nama, email, kode…" oninput="filterMembers()" />
+            <select id="memberStatusFilter" onchange="filterMembers()">
+              <option value="">Semua Status</option>
+              <option value="Active">Active</option>
+              <option value="Expired">Expired</option>
+              <option value="Suspended">Suspended</option>
+            </select>
+            <select id="memberPlanFilter" onchange="filterMembers()">
+              <option value="">Semua Paket</option>
+              <option value="Basic">Basic</option>
+              <option value="Premium">Premium</option>
+              <option value="Elite">Elite</option>
+              <option value="Personal Trainer">Personal Trainer</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table id="membersTable">
+              <thead>
+                <tr><th>Member</th><th>Kode</th><th>Paket</th><th>Mulai</th><th>Jatuh Tempo</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="membersBody"></tbody>
+            </table>
+          </div>
+          <div class="table-footer" id="memberFooter"></div>
+        </div>
+      </section>
+
+      <!-- ══ BILLING ════════════════════════════════════════════ -->
+      <section id="page-billing" class="page">
+        <div class="page-header">
+          <div><h1>Billing</h1><p>Kelola invoice dan tagihan</p></div>
+          <button class="btn btn-primary" onclick="openAddInvoice()">+ Add Invoice</button>
+        </div>
+        <div class="summary-chips" id="billingChips"></div>
+        <div class="card">
+          <div class="filters">
+            <input type="text" id="invoiceSearch" placeholder="Cari no. invoice, nama…" oninput="filterInvoices()" />
+            <select id="invoiceStatusFilter" onchange="filterInvoices()">
+              <option value="">Semua Status</option>
+              <option value="Paid">Paid</option>
+              <option value="Unpaid">Unpaid</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table id="invoicesTable">
+              <thead>
+                <tr><th>Invoice</th><th>Member</th><th>Paket</th><th>Periode</th><th>Jumlah</th><th>Jatuh Tempo</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="invoicesBody"></tbody>
+            </table>
+          </div>
+          <div class="table-footer" id="invoiceFooter"></div>
+        </div>
+      </section>
+
+      <!-- ══ RECURRING ══════════════════════════════════════════ -->
+      <section id="page-recurring" class="page">
+        <div class="page-header">
+          <div><h1>Recurring Billing</h1><p>Langganan berulang</p></div>
+          <button class="btn btn-primary" onclick="openAddSubscription()">+ Tambah Langganan</button>
+        </div>
+        <div class="summary-chips" id="recurringChips"></div>
+        <div class="card">
+          <div class="filters">
+            <input type="text" id="recurringSearch" placeholder="Cari nama member…" oninput="filterSubscriptions()" />
+            <select id="recurringStatusFilter" onchange="filterSubscriptions()">
+              <option value="">Semua Status</option>
+              <option value="Active">Active</option>
+              <option value="Paused">Paused</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table id="subscriptionsTable">
+              <thead>
+                <tr><th>Member</th><th>Paket</th><th>Iuran/Bln</th><th>Next Billing</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="subscriptionsBody"></tbody>
+            </table>
+          </div>
+          <div class="table-footer" id="recurringFooter"></div>
+        </div>
+      </section>
+
+      <!-- ══ PAYMENTS ═══════════════════════════════════════════ -->
+      <section id="page-payments" class="page">
+        <div class="page-header">
+          <div><h1>Payments</h1><p>Riwayat pembayaran</p></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" onclick="exportPaymentsCSV()">⬇ Export CSV</button>
+            <button class="btn btn-primary" onclick="openAddPayment()">+ Catat Pembayaran</button>
+          </div>
+        </div>
+        <div class="summary-chips" id="paymentChips"></div>
+        <div class="card">
+          <div class="filters">
+            <input type="text" id="paymentSearch" placeholder="Cari nama, invoice…" oninput="filterPayments()" />
+            <select id="paymentStatusFilter" onchange="filterPayments()">
+              <option value="">Semua Status</option>
+              <option value="Success">Success</option>
+              <option value="Pending">Pending</option>
+              <option value="Failed">Failed</option>
+            </select>
+            <select id="paymentMethodFilter" onchange="filterPayments()">
+              <option value="">Semua Metode</option>
+              <option value="Transfer Bank">Transfer Bank</option>
+              <option value="Cash">Cash</option>
+              <option value="Debit Card">Debit Card</option>
+              <option value="QRIS">QRIS</option>
+              <option value="E-Wallet">E-Wallet</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table id="paymentsTable">
+              <thead>
+                <tr><th>Tanggal</th><th>Member</th><th>Invoice</th><th>Jumlah</th><th>Metode</th><th>Status</th></tr>
+              </thead>
+              <tbody id="paymentsBody"></tbody>
+            </table>
+          </div>
+          <div class="table-footer" id="paymentFooter"></div>
+        </div>
+      </section>
+
+      <!-- ══ ACCOUNTING ═════════════════════════════════════════ -->
+      <section id="page-accounting" class="page">
+        <div class="page-header">
+          <div><h1>Accounting & Revenue</h1><p>Ringkasan keuangan</p></div>
+          <button class="btn btn-secondary" onclick="exportAccountingCSV()">⬇ Export CSV</button>
+        </div>
+        <div class="stat-grid" id="accountingStats"></div>
+        <div class="card">
+          <div class="card-header"><b>Revenue Summary (5 Bulan Terakhir)</b></div>
+          <div class="table-wrap">
+            <table id="revenueTable">
+              <thead>
+                <tr><th>Bulan</th><th>Revenue</th><th>Recognized</th><th>Selisih</th></tr>
+              </thead>
+              <tbody id="revenueBody"></tbody>
+              <tfoot id="revenueFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><b>Outstanding Invoices</b></div>
+          <div id="accountingOutstanding" class="list-wrap"></div>
+        </div>
+      </section>
+
+      <!-- ══ REPORTS ════════════════════════════════════════════ -->
+      <section id="page-reports" class="page">
+        <div class="page-header">
+          <div><h1>Reports</h1><p>Laporan keuangan</p></div>
+          <button class="btn btn-secondary" onclick="exportReportsCSV()">⬇ Export CSV</button>
+        </div>
+        <div class="stat-grid" id="reportStats"></div>
+        <div class="card">
+          <div class="card-header"><b>Revenue Report — YTD</b></div>
+          <div class="table-wrap">
+            <table id="reportsTable">
+              <thead>
+                <tr><th>Bulan</th><th>Revenue</th><th>Recognized</th><th>Growth</th></tr>
+              </thead>
+              <tbody id="reportsBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><b>Membership Revenue per Paket</b></div>
+          <div id="planRevenueList" class="plan-revenue-wrap"></div>
+        </div>
+      </section>
+
+    </main>
   </div>
+
+  <!-- ══ MODAL ══════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-box" id="modalBox">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle">Modal</div>
+          <div class="modal-sub" id="modalSub"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <!-- ══ TOAST ══════════════════════════════════════════════════ -->
+  <div id="toastContainer"></div>
+
+  <script src="script.js"></script>
 </body>
 </html>
