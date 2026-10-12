@@ -4,6 +4,14 @@ Aplikasi manajemen keanggotaan gym berbasis web dengan fitur billing, pembayaran
 
 ---
 
+## 🌐 Demo Aplikasi
+
+> **Akses langsung tanpa instalasi:**
+
+### 👉 [https://ayolandame24.github.io/sistem-member-gym/](https://ayolandame24.github.io/sistem-member-gym/)
+
+---
+
 ## 📁 Struktur Proyek
 
 ```
@@ -18,7 +26,6 @@ sistem-member-gym/
 │   ├── index.html          # Halaman utama aplikasi (single-page)
 │   ├── script.js           # Logika aplikasi: koneksi Supabase, CRUD, UI
 │   └── style.css           # Stylesheet lengkap dan responsif
-├── src/                    # Source React/TypeScript (Vite build)
 ├── index.html              # Entry point root (redirect ke frontend/)
 └── README.md               # Dokumentasi ini
 ```
@@ -27,9 +34,24 @@ sistem-member-gym/
 
 ## 🚀 Cara Menjalankan
 
-### A. Frontend Langsung (Tanpa Server)
+### ✅ Cara Tercepat — Buka Online
 
-Buka file `frontend/index.html` langsung di browser, atau jalankan server lokal:
+Tidak perlu instalasi apapun. Langsung buka di browser:
+
+**👉 [https://ayolandame24.github.io/sistem-member-gym/](https://ayolandame24.github.io/sistem-member-gym/)**
+
+---
+
+### A. Jalankan Lokal (Tanpa Server)
+
+Clone repo lalu buka file frontend langsung:
+
+```bash
+git clone https://github.com/ayolandame24/sistem-member-gym.git
+cd sistem-member-gym
+```
+
+Kemudian buka `frontend/index.html` di browser, atau gunakan server lokal:
 
 ```bash
 # Menggunakan Python
@@ -161,23 +183,11 @@ Base URL: `http://localhost:3000`
 
 | Layer | Teknologi |
 |---|---|
-| Frontend (React) | React 18, TypeScript, Vite, Tailwind CSS |
-| Frontend (Vanilla) | HTML5, CSS3, Vanilla JavaScript |
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
 | Backend API | Node.js, Express.js |
 | Database | Supabase (PostgreSQL) |
-| Auth/Storage | Supabase |
-| Deploy | GitHub Pages (frontend), GitHub Actions (CI/CD) |
-
----
-
-## ⚙️ Konfigurasi Environment
-
-Buat file `.env.local` di root project:
-
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
-```
+| Deploy | GitHub Pages |
+| Repo | [github.com/ayolandame24/sistem-member-gym](https://github.com/ayolandame24/sistem-member-gym) |
 
 ---
 
